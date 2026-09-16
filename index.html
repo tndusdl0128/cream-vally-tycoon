@@ -110,6 +110,18 @@
     .player-layer{background-size:500% auto!important;background-position-y:100%!important}
     .player[data-dir="3"] .player-body{clip-path:polygon(0 0,92% 0,92% 72%,0 72%)}
     .player[data-dir="3"] .player-leg-b{clip-path:polygon(49% 54%,92% 54%,92% 100%,49% 100%)}
+
+    /* 1.0.5 안정화: 깜빡임·터치·착유 표시·붉은 잔상 개선 */
+    .cow.near .cow-sprite,.cow.overfull.near .cow-sprite{filter:none!important}
+    .cow[data-atlas="main"] .cow-heat{clip-path:inset(0 0 12% 0)}
+    .cow[data-atlas="alt"] .cow-heat{clip-path:inset(0 0 10% 0)}
+    .action-progress{width:36px;height:36px;transform:translate(-50%,-170%);box-shadow:0 3px 10px rgba(23,61,55,.2);pointer-events:none}
+    .action-progress::after{content:""!important;width:27px;height:27px;font-size:0;background:rgba(255,255,255,.96)}
+    .player.milking{width:11%!important;animation:milkSmooth .14s ease-out!important}
+    @keyframes milkSmooth{0%{transform:translate(-50%,-70%) rotate(0)}45%{transform:translate(-50%,-70%) rotate(-2deg) translateY(1px)}100%{transform:translate(-50%,-70%) rotate(0)}}
+    .day-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}.day-summary-card{padding:13px;border:1px solid #dfeae4;border-radius:15px;background:linear-gradient(145deg,#fff,#eff8f3)}.day-summary-card span{display:block;color:#70867f;font-size:12px;font-weight:800}.day-summary-card b{display:block;margin-top:4px;font-size:19px}.day-summary-card.wide{grid-column:1/-1;background:#173d37;color:white;border-color:#173d37}.day-summary-card.wide span{color:#cfe5dc}.day-summary-note{padding:10px 12px;border-radius:13px;background:#fff6d8;color:#72591c;font-size:12px;font-weight:800;line-height:1.5}
+    @media(max-width:820px){.player.milking{width:14%!important}.action-progress{width:32px;height:32px}.action-progress::after{width:24px;height:24px}}
+    @media(max-width:480px){.player.milking{width:15.5%!important}}
   </style>
 </head>
 <body>
@@ -185,6 +197,7 @@
 <dialog id="helpDialog"><div class="modal"><h2>게임 방법</h2><p><b>젖소 누르기 → 캐릭터가 가까이 이동해 착유 → 창고에서 확인하거나 판매·가공</b>이 기본 흐름입니다. PC에서는 WASD·방향키로 이동하고 Space·E로도 착유할 수 있습니다.</p><div class="guide"><div><i>💾</i><span>3초마다 이 브라우저에 자동 저장됩니다.</span></div><div><i>🧊</i><span>위쪽 냉장 창고 버튼에서 보유 상품을 이미지로 확인할 수 있습니다.</span></div><div><i>🏆</i><span>거래처 버튼에서는 납품 금액이 많은 순서로 순위를 보여줍니다.</span></div><div><i>ℹ️</i><span>게임 속 실존 기업명은 연출을 위한 텍스트이며, 해당 기업과 제휴·후원 관계가 없습니다.</span></div></div><div class="modal-actions"><button class="primary" id="closeHelp">계속하기</button></div></div></dialog>
 <dialog id="storageDialog"><div class="modal"><div class="modal-head"><h2>🧊 냉장 창고</h2><button class="modal-close" id="closeStorage" aria-label="냉장 창고 닫기">×</button></div><div class="storage-summary"><span id="storageUsed">보관 0개</span><span id="storageCapacity">생우유 0/20병</span></div><div class="visual-grid" id="storageGrid"></div><div class="detail-box" id="storageDetail">상품 이미지를 누르면 보유 수량과 현재 판매가를 확인할 수 있어요.</div></div></dialog>
 <dialog id="clientsDialog"><div class="modal"><div class="modal-head"><h2>🏆 거래처 순위</h2><button class="modal-close" id="closeClients" aria-label="거래처 순위 닫기">×</button></div><p>누적 납품 금액이 큰 거래처부터 표시합니다.</p><div class="ranking-list" id="clientRanking"></div></div></dialog>
+<dialog id="daySummaryDialog"><div class="modal"><div class="modal-head"><h2 id="daySummaryTitle">하루 결산</h2><button class="modal-close" id="closeDaySummary" aria-label="하루 결산 닫기">×</button></div><p id="daySummaryLead">오늘의 목장 운영 결과입니다.</p><div class="day-summary-grid" id="daySummaryGrid"></div><div class="day-summary-note" id="daySummaryNote"></div><div class="modal-actions" style="margin-top:14px"><button class="primary" id="confirmDaySummary">다음 날 시작하기</button></div></div></dialog>
 
 <script>
 (()=>{'use strict';
@@ -338,6 +351,83 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
  $('#upgradeStorage').onclick=upgradeStorage;$('#farmSelect').onchange=e=>{state.selectedFarm=+e.target.value;state.player={x:49,y:77,dir:0};moveTarget=null;pendingMilkCowId=null;render();save()};$('#soundBtn').onclick=()=>{state.sound=!state.sound;$('#soundBtn').textContent=state.sound?'🔊':'🔇';save()};$('#helpBtn').onclick=()=>$('#helpDialog').showModal();$('#closeHelp').onclick=()=>$('#helpDialog').close();$('#storageBtn').onclick=openStorage;$('#clientsBtn').onclick=openClients;$('#closeStorage').onclick=()=>$('#storageDialog').close();$('#closeClients').onclick=()=>$('#clientsDialog').close();$('#storageGrid').onclick=e=>{const item=e.target.closest('[data-storage]');if(item)renderStorage(item.dataset.storage)};$('#startGame').onclick=()=>{state.started=true;save();$('#introDialog').close();toast('젖소를 톡톡 누르면 캐릭터가 다가가 우유를 짭니다!','good')};$('#manualSave').onclick=()=>save(true);$('#exportSave').onclick=exportSave;$('#importSave').onchange=e=>importSave(e.target.files[0]);$('#offlineDownload').onclick=e=>{e.preventDefault();downloadHtml()};$('#resetGame').onclick=()=>{if(confirm('모든 진행 상황을 지우고 처음부터 시작할까요?')){localStorage.removeItem(SAVE_KEY);state=fresh();render();$('#introDialog').showModal()}};window.addEventListener('beforeunload',()=>save());
  }
  const originalRenderCows=renderCows;renderCows=function(){originalRenderCows();const f=farm();$$('.cow').forEach((el,i)=>{const c=f.cows[i],type=cowTypes[c.type],img=el.style.backgroundImage,isFull=c.fill>=4.8,size=type.atlas?'500% 200%':'500% 300%',position=`${type.pos*25}% ${isFull?(type.atlas?100:50):0}%`;el.style.backgroundImage='none';el.dataset.atlas=type.atlas?'alt':'main';el.classList.toggle('overfull',isFull);el.classList.toggle('squeezing',!!c.squeezeLeft);el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label',`${type.name} 젖소 · ${isFull?'우유 가득 참':'우유 '+Math.round(c.fill/5*100)+'%'}`);const sprite=document.createElement('span');sprite.className='cow-sprite';sprite.style.backgroundImage=img;sprite.style.backgroundSize=size;sprite.style.backgroundPosition=position;const heat=document.createElement('span');heat.className='cow-heat';heat.style.webkitMaskImage=img;heat.style.maskImage=img;heat.style.webkitMaskSize=size;heat.style.maskSize=size;heat.style.webkitMaskPosition=position;heat.style.maskPosition=position;const gauge=document.createElement('span');gauge.className='cow-gauge';gauge.setAttribute('aria-hidden','true');gauge.innerHTML=`<i style="width:${Math.min(100,c.fill/5*100)}%"></i>`;const status=document.createElement('span');status.className='cow-full-status';status.setAttribute('aria-hidden','true');status.textContent='💦';el.replaceChildren(sprite,heat,gauge,status)})};const originalRenderPlayer=renderPlayer;renderPlayer=function(){originalRenderPlayer();$('#player').dataset.dir=state.player.dir};
+ /* 1.0.5 gameplay stability and daily summary */
+ const rebuildCowElements=renderCows;
+ renderCows=function(){
+  const cows=farm().cows;
+  let els=$$('.cow');
+  const needsRebuild=els.length!==cows.length||els.some((el,i)=>!cows[i]||el.dataset.id!==cows[i].id);
+  if(needsRebuild){rebuildCowElements();els=$$('.cow')}
+  els.forEach((el,i)=>{
+   const c=cows[i];if(!c)return;
+   const type=cowTypes[c.type],isFull=c.fill>=4.8,position=`${type.pos*25}% ${isFull?(type.atlas?100:50):0}%`;
+   el.classList.toggle('overfull',isFull);el.classList.toggle('squeezing',!!c.squeezeLeft);
+   el.setAttribute('aria-label',`${type.name} 젖소 · ${isFull?'우유 가득 참':'우유 '+Math.round(c.fill/5*100)+'%'}`);
+   const sprite=el.querySelector('.cow-sprite'),heat=el.querySelector('.cow-heat'),gauge=el.querySelector('.cow-gauge i');
+   if(sprite&&sprite.style.backgroundPosition!==position)sprite.style.backgroundPosition=position;
+   if(heat){heat.style.webkitMaskPosition=position;heat.style.maskPosition=position}
+   if(gauge)gauge.style.width=Math.min(100,c.fill/5*100)+'%';
+  })
+ };
+
+ const emptyDayStats=()=>({milkProduced:0,productsMade:0,unitsSold:0,salesRevenue:0,ordersDelivered:0,orderRevenue:0});
+ function currentDayStats(){return state.dayStats||(state.dayStats=emptyDayStats())}
+ currentDayStats();
+
+ const trackedProcessJobs=processJobs;
+ processJobs=function(){const before=state.stats.processed;trackedProcessJobs();const made=state.stats.processed-before;if(made>0)currentDayStats().productsMade+=made};
+ const trackedSell=sell;
+ sell=function(item,count){const beforeSold=state.stats.sold,beforeRevenue=state.revenue;trackedSell(item,count);const sold=state.stats.sold-beforeSold,earned=state.revenue-beforeRevenue;if(sold>0){const d=currentDayStats();d.unitsSold+=sold;d.salesRevenue+=earned}};
+ const trackedFulfillOrder=fulfillOrder;
+ fulfillOrder=function(id){const order=findOrder(id),wasAccepted=order?.status==='accepted',beforeRevenue=state.revenue;trackedFulfillOrder(id);if(wasAccepted&&order?.status==='completed'){const d=currentDayStats();d.ordersDelivered++;d.unitsSold+=order.count;d.orderRevenue+=state.revenue-beforeRevenue}};
+
+ function refreshMilkUI(){
+  $('#money').textContent=money(state.money);$('#milk').textContent=Math.floor(state.milk);$('#milkCap').textContent=state.milkCap;$('#levelMini').textContent='Lv.'+level();
+  const milkCount=$('#inventory .inv-card:first-child em');if(milkCount)milkCount.textContent=Math.floor(state.milk);
+  if($('#storageDialog').open)renderStorage('milk');
+  renderCows();
+ }
+
+ let milkAnimationTimer=0,progressHideTimer=0;
+ doMilk=function(cowId=null){
+  const now=performance.now();if(now<milkLockUntil)return;
+  const c=cowId?farm().cows.find(x=>x.id===cowId):updateNear();
+  if(!c){toast('젖소 가까이 이동해 주세요.','warn');return}
+  if(c.fill<.15){toast('아직 짤 우유가 충분하지 않아요.');return}
+  if(state.milk>=state.milkCap){toast('냉장 창고가 가득 찼어요.','warn');openStorage();return}
+  if(!c.squeezeLeft){c.squeezeLeft=c.fill>=4.5?6:Math.max(1,Math.ceil(c.fill/(5/6)));c.squeezeTotal=c.squeezeLeft}
+  if(!c.squeezeTotal)c.squeezeTotal=c.squeezeLeft;
+  const type=cowTypes[c.type],bondBoost=1+Math.min(.25,(c.bond||0)*.005),made=Math.min(state.milkCap-state.milk,Math.max(1,Math.round(type.mult*bondBoost))),portion=c.fill/c.squeezeLeft;
+  c.fill=Math.max(0,c.fill-portion);c.squeezeLeft--;state.milk+=made;state.stats.milked+=made;currentDayStats().milkProduced+=made;addXp(made*2);
+  const completed=c.squeezeLeft<=0||c.fill<.03,total=c.squeezeTotal||1;let star=false;
+  if(completed){c.fill=0;delete c.squeezeLeft;delete c.squeezeTotal;c.bond=Math.min(50,(c.bond||0)+1);star=Math.random()<(c.type>=8?.14:c.type===7?.1:.07);if(star){state.money+=800;state.stats.starMilk++;toast('✨ 희귀한 별빛 우유! 보너스 800원','good')}}
+  milking=true;milkLockUntil=now+85;moveTarget=null;pendingMilkCowId=null;keys={up:false,down:false,left:false,right:false};
+  const index=farm().cows.indexOf(c),spot=cowSpots[Math.max(0,index)],prog=$('#actionProgress'),done=completed?total:Math.max(0,total-c.squeezeLeft);
+  prog.classList.add('show');prog.style.left=spot.x+'%';prog.style.top=spot.y+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
+  sound('milk');if(completed)sparkle(spot.x,spot.y-5);refreshMilkUI();renderPlayer();
+  clearTimeout(milkAnimationTimer);milkAnimationTimer=setTimeout(()=>{milking=false;renderPlayer()},115);
+  clearTimeout(progressHideTimer);progressHideTimer=setTimeout(()=>prog.classList.remove('show'),260);
+  if(completed)save();
+ };
+
+ function showDaySummary(endedDay,days,cost,incident,summary){
+  const revenue=summary.salesRevenue+summary.orderRevenue,net=revenue-cost-incident;
+  $('#daySummaryTitle').textContent=`📊 ${endedDay}일차 결산`;
+  $('#daySummaryLead').textContent='오늘의 목장 운영 결과를 한눈에 확인하세요.';
+  $('#daySummaryGrid').innerHTML=`<div class="day-summary-card"><span>하루 매출</span><b>${money(revenue)}</b></div><div class="day-summary-card"><span>생산한 우유</span><b>${Math.floor(summary.milkProduced)}병</b></div><div class="day-summary-card"><span>가공 완료</span><b>${summary.productsMade}개</b></div><div class="day-summary-card"><span>판매·납품량</span><b>${summary.unitsSold}개</b></div><div class="day-summary-card"><span>납품 성공</span><b>${summary.ordersDelivered}건</b></div><div class="day-summary-card"><span>유지비·수리비</span><b>${money(cost+incident)}</b></div><div class="day-summary-card wide"><span>오늘의 순수익</span><b>${net>=0?'+':''}${money(net)}</b></div>`;
+  $('#daySummaryNote').textContent=days>1?`${days}일이 지나 유지비가 한꺼번에 반영되었습니다. 다음 결산부터 현재 날짜의 실적을 집계합니다.`:`${state.day}일차가 시작되었습니다. 새로운 날씨와 시세를 확인해 보세요.`;
+  const dialog=$('#daySummaryDialog');if(!dialog.open)dialog.showModal();
+ }
+
+ const trackedUpdate=update;
+ update=function(dt){
+  const oldDay=state.day,beforeCost=maintenance(),summary={...currentDayStats()};
+  trackedUpdate(dt);
+  if(state.day!==oldDay){const days=state.day-oldDay,cost=beforeCost*days,incident=state.day%7===0?Math.round(state.buildings.factory*1800*(state.staff.foreman?.5:1)):0;state.dayStats=emptyDayStats();showDaySummary(oldDay,days,cost,incident,summary);save()}
+ };
+ $('#closeDaySummary').onclick=()=>$('#daySummaryDialog').close();
+ $('#confirmDaySummary').onclick=()=>$('#daySummaryDialog').close();
+
  function loop(now){const dt=Math.min(.05,(now-lastFrame)/1000);lastFrame=now;update(dt);saveTimer+=dt;if(saveTimer>3){saveTimer=0;save()}requestAnimationFrame(loop)}
  function registerWebMCP(){const mc=document.modelContext;if(!mc?.registerTool)return;try{mc.registerTool({name:'get_farm_status',title:'목장 상태 확인',description:'현재 우유, 돈, 기업 단계, 젖소 상태를 확인합니다.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute(){return{money:state.money,milk:Math.floor(state.milk),milkCapacity:state.milkCap,companyTier:tiers[tier()].name,playerLevel:level(),farms:state.farms.length,factories:state.buildings.factory,researchLabLevel:state.buildings.lab,cows:farm().cows.map((c,i)=>({name:cowTypes[c.type].name,fullness:+c.fill.toFixed(1),needsMilking:c.fill>=4}))}}});mc.registerTool({name:'sell_all_products',title:'모든 제품 판매',description:'현재 보유 중인 우유와 완성된 유제품을 모두 판매합니다.',inputSchema:{type:'object',properties:{confirm:{type:'boolean'}},required:['confirm'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(!input||input.confirm!==true)throw new Error('판매 확인이 필요합니다.');products.map(p=>p.id).forEach(x=>{if(state[x]>0)sell(x,'all')});return{money:state.money,revenue:state.revenue}}})}catch(e){}}
  catchUp();bind();render();$('#soundBtn').textContent=state.sound?'🔊':'🔇';if(!state.started)$('#introDialog').showModal();setTimeout(()=>$('#controlsTip').classList.add('hide'),9000);registerWebMCP();requestAnimationFrame(loop);
