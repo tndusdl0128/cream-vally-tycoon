@@ -801,7 +801,7 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   prog.classList.add('show');
   const cowEl=$(`.cow[data-id="${c.id}"]`),gaugeEl=cowEl?.querySelector('.cow-gauge'),worldRect=$('#world').getBoundingClientRect();
   if(gaugeEl&&worldRect.width&&worldRect.height){
-   const gaugeRect=gaugeEl.getBoundingClientRect(),progSize=Math.max(12,prog.offsetWidth||14.5),cx=((gaugeRect.left+gaugeRect.width/2)-worldRect.left)/worldRect.width*100,cy=((gaugeRect.top-worldRect.top)-(progSize/2)-2)/worldRect.height*100;
+   const gaugeRect=gaugeEl.getBoundingClientRect(),progSize=Math.max(12,prog.offsetWidth||14.5),cx=((gaugeRect.left+gaugeRect.width/2)-worldRect.left)/worldRect.width*100,cy=((gaugeRect.top-worldRect.top)-(progSize/2)-15)/worldRect.height*100;
    prog.style.left=cx+'%';prog.style.top=cy+'%';
   }else{prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-6.8)+'%'}
   prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
