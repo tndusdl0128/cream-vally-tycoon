@@ -331,6 +331,50 @@
 /* milking progress: transparent-center yellow donut */
 .action-progress{width:14.5px!important;height:14.5px!important;transform:translate(-50%,-50%)!important;background:conic-gradient(var(--gold) var(--p),rgba(23,61,55,.16) 0)!important;box-shadow:0 1px 4px rgba(23,61,55,.16)!important;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 0)}
 .action-progress::after{content:none!important;display:none!important}
+
+
+/* === 1.0.13 gradual cow fullness + mission reward popup + farm themes === */
+/* 젖소는 게이지가 차는 동안 가로 폭이 더 크게, 세로는 조금만 서서히 증가 */
+/* 기존 부모 .cow의 full 상태 scale/urgentNew 애니메이션이 순간 확대를 만들므로 완전히 제거 */
+.cow.overfull{transform:translate(-50%,-50%)!important;animation:none!important}
+.cow-sprite,.cow-heat{transform:scale(var(--cow-sx),var(--cow-sy));transform-origin:50% 68%}
+.cow.overfull .cow-sprite,.cow.overfull .cow-heat{transform:scale(var(--cow-sx),var(--cow-sy))}
+@keyframes cowDemandShiver{
+  0%,2%,4%,6%,8%,100%{transform:translateX(0) scale(var(--cow-sx),var(--cow-sy)) rotate(0deg)}
+  1%,5%{transform:translateX(-1.2px) scale(var(--cow-sx),var(--cow-sy)) rotate(-.35deg)}
+  3%,7%{transform:translateX(1.2px) scale(var(--cow-sx),var(--cow-sy)) rotate(.35deg)}
+}
+
+.mission-reward-modal{max-width:390px;text-align:center}
+.mission-reward-burst{font-size:46px;line-height:1;margin:4px 0 8px;animation:missionRewardPop .45s cubic-bezier(.2,.9,.25,1.25)}
+@keyframes missionRewardPop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
+.mission-reward-title{font-size:21px;font-weight:950;color:var(--ink);margin:2px 0 6px}
+.mission-reward-desc{font-size:13px;color:#607a72;font-weight:800;margin-bottom:12px}
+.mission-reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.mission-reward-box{background:linear-gradient(145deg,#fffdf4,#f0f9f4);border:1px solid #d8e8df;border-radius:15px;padding:12px 8px;box-shadow:0 5px 14px rgba(23,61,55,.07)}
+.mission-reward-box i{display:block;font-style:normal;font-size:23px;margin-bottom:4px}.mission-reward-box b{display:block;font-size:16px}.mission-reward-box small{display:block;color:#6e847d;font-weight:800;margin-top:2px}
+
+/* 목장별 시각 테마: 기존 지도 위에 은은하게 얹어 구조는 유지하고 분위기만 확실히 구분 */
+.world-wrap{position:relative;isolation:isolate}
+.farm-theme-layer{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;border-radius:inherit;transition:background .8s ease,box-shadow .8s ease,filter .8s ease}
+.farm-theme-layer::before,.farm-theme-layer::after{content:'';position:absolute;inset:-12%;pointer-events:none;transition:opacity .8s ease,transform .8s ease}
+.world-wrap[data-farm-theme="0"] .farm-theme-layer{background:linear-gradient(145deg,rgba(255,224,113,.09),transparent 48%)}
+.world-wrap[data-farm-theme="0"] .farm-theme-layer::before{background:radial-gradient(circle at 15% 18%,rgba(255,241,159,.38),transparent 22%);opacity:.9}
+.world-wrap[data-farm-theme="1"] .farm-theme-layer{background:linear-gradient(110deg,rgba(212,247,224,.10),rgba(227,250,242,.03))}
+.world-wrap[data-farm-theme="1"] .farm-theme-layer::before{background:repeating-linear-gradient(120deg,transparent 0 13%,rgba(255,255,255,.10) 14% 15%,transparent 16% 31%);opacity:.55;animation:farmWindSweep 15s linear infinite}
+@keyframes farmWindSweep{from{transform:translateX(-5%)}to{transform:translateX(10%)}}
+.world-wrap[data-farm-theme="2"] .farm-theme-layer{background:linear-gradient(180deg,rgba(107,198,232,.08),rgba(81,163,207,.15))}
+.world-wrap[data-farm-theme="2"] .farm-theme-layer::before{background:radial-gradient(ellipse at 15% 78%,rgba(158,230,255,.25),transparent 25%),radial-gradient(ellipse at 82% 18%,rgba(205,245,255,.12),transparent 24%);opacity:.8}
+.world-wrap[data-farm-theme="3"] .farm-theme-layer{background:linear-gradient(145deg,rgba(237,145,71,.14),rgba(255,205,111,.06) 48%,rgba(122,83,45,.05))}
+.world-wrap[data-farm-theme="3"] .farm-theme-layer::before{background:radial-gradient(circle at 20% 18%,rgba(255,189,91,.24),transparent 22%),radial-gradient(circle at 85% 72%,rgba(171,76,42,.15),transparent 28%)}
+.world-wrap[data-farm-theme="4"] .farm-theme-layer{background:linear-gradient(180deg,rgba(36,39,90,.16),rgba(53,58,112,.10))}
+.world-wrap[data-farm-theme="4"] .farm-theme-layer::before{background-image:radial-gradient(circle,rgba(255,255,230,.85) 0 1px,transparent 1.5px);background-size:43px 37px;opacity:.52;animation:farmStarTwinkle 3.8s ease-in-out infinite alternate}
+@keyframes farmStarTwinkle{to{opacity:.28;transform:translateY(-1%)}}
+.world-wrap[data-farm-theme="5"] .farm-theme-layer{background:linear-gradient(180deg,rgba(80,52,134,.10),rgba(69,181,167,.10),rgba(255,199,115,.04))}
+.world-wrap[data-farm-theme="5"] .farm-theme-layer::before{background:linear-gradient(115deg,transparent 20%,rgba(115,246,217,.20) 34%,rgba(158,113,255,.17) 47%,rgba(255,156,205,.14) 58%,transparent 74%);filter:blur(13px);opacity:.78;animation:farmAurora 8s ease-in-out infinite alternate}
+@keyframes farmAurora{from{transform:translateX(-9%) skewX(-5deg)}to{transform:translateX(8%) skewX(5deg)}}
+.world-wrap.paused .farm-theme-layer::before{animation-play-state:paused!important}
+
 </style>
 </head>
 <body>
@@ -416,6 +460,8 @@
 <dialog id="storageDialog"><div class="modal"><div class="modal-head"><h2>🧊 냉장 창고</h2><button class="modal-close" id="closeStorage" aria-label="냉장 창고 닫기">×</button></div><div class="storage-summary"><span id="storageUsed">보관 0개</span><span id="storageCapacity">생우유 0/20병</span></div><div class="visual-grid" id="storageGrid"></div><div class="detail-box" id="storageDetail">상품 이미지를 누르면 보유 수량과 현재 판매가를 확인할 수 있어요.</div></div></dialog>
 <dialog id="clientsDialog"><div class="modal"><div class="modal-head"><h2>🏆 거래처 순위</h2><button class="modal-close" id="closeClients" aria-label="거래처 순위 닫기">×</button></div><p>누적 납품 금액이 큰 거래처부터 표시합니다.</p><div class="ranking-list" id="clientRanking"></div></div></dialog>
 <dialog id="cowProfileDialog"><div class="modal"><div class="modal-head"><h2>🐮 젖소 프로필</h2><button class="modal-close" id="closeCowProfile" aria-label="젖소 프로필 닫기">×</button></div><div id="cowProfileBody"></div></div></dialog>
+
+<dialog id="missionRewardDialog"><div class="modal mission-reward-modal"><div class="mission-reward-burst" id="missionRewardIcon">🎯</div><div class="mission-reward-title" id="missionRewardTitle">미션 완료!</div><div class="mission-reward-desc" id="missionRewardDesc"></div><div class="mission-reward-grid"><div class="mission-reward-box"><i>💰</i><b id="missionRewardMoney">0원</b><small>획득 머니</small></div><div class="mission-reward-box"><i>⭐</i><b id="missionRewardXp">0 XP</b><small>획득 경험치</small></div></div><div class="modal-actions"><button class="primary" id="confirmMissionReward">보상 확인</button></div></div></dialog>
 <dialog id="daySummaryDialog"><div class="modal"><div class="modal-head"><h2 id="daySummaryTitle">하루 결산</h2><button class="modal-close" id="closeDaySummary" aria-label="하루 결산 닫기">×</button></div><p id="daySummaryLead">오늘의 목장 운영 결과입니다.</p><div class="day-summary-grid" id="daySummaryGrid"></div><div class="day-summary-note" id="daySummaryNote"></div><div class="modal-actions" style="margin-top:14px"><button class="primary" id="confirmDaySummary">다음 날 시작하기</button></div></div></dialog>
 
 <script>
@@ -752,7 +798,7 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   }
   milking=true;milkLockUntil=now+85;moveTarget=null;pendingMilkCowId=null;keys={up:false,down:false,left:false,right:false};
   const index=farm().cows.indexOf(c),spot=cowSpots[Math.max(0,index)],prog=$('#actionProgress'),done=completed?total:Math.max(0,total-c.squeezeLeft);
-  prog.classList.add('show');prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-14.2)+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
+  prog.classList.add('show');prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-5.4)+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
   sound('milk');if(rare)floatText(`${products.find(x=>x.id===rare).icon} ${products.find(x=>x.id===rare).name}!`,spot.x,spot.y-8);if(completed)sparkle(spot.x,spot.y-5);refreshMilkUI();renderPlayer();
   clearTimeout(milkAnimationTimer);milkAnimationTimer=setTimeout(()=>{milking=false;renderPlayer()},115);
   clearTimeout(progressHideTimer);progressHideTimer=setTimeout(()=>prog.classList.remove('show'),260);
@@ -896,6 +942,66 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
  },true);
  worldWrap109.addEventListener('pointercancel',()=>{if(cowPress109){clearTimeout(cowPress109.timer);cowPress109=null}},true);
  // 젖소 정보는 더블클릭 없이 길게 누르기로만 엽니다.
+
+
+
+ /* 1.0.13 gradual cow fullness + mission reward popup + distinct farm visuals */
+ // 기존 smoothstep은 초반 변화가 너무 작아 체감상 갑자기 커져 보일 수 있어, 게이지와 1:1로 선형 증가시킵니다.
+ syncCowGauges109=function(){
+  const cows=farm().cows,els=$$('.cow');
+  els.forEach((el,i)=>{
+   const c=cows[i];if(!c)return;
+   const fill=Math.max(0,Math.min(1,c.fill/5)),pct=fill*100,g=el.querySelector('.cow-gauge i');
+   if(g)g.style.width=`${pct}%`;
+   const sx=1+fill*.16,sy=1+fill*.065,heat=Math.max(0,(fill-.20)/.80)*.34;
+   el.style.setProperty('--cow-sx',sx.toFixed(4));
+   el.style.setProperty('--cow-sy',sy.toFixed(4));
+   el.style.setProperty('--cow-heat-opacity',heat.toFixed(3));
+   el.classList.toggle('overfull',fill>=.96);
+  });
+ };
+
+ const missionRewardQueue113=[];
+ let missionRewardShowing113=false;
+ function showNextMissionReward113(){
+  if(missionRewardShowing113||!missionRewardQueue113.length)return;
+  const m=missionRewardQueue113.shift(),dlg=$('#missionRewardDialog');if(!dlg)return;
+  missionRewardShowing113=true;
+  $('#missionRewardIcon').textContent=m.icon||'🎯';
+  $('#missionRewardTitle').textContent=`미션 완료 · ${m.title}`;
+  $('#missionRewardDesc').textContent=m.desc||'목표를 달성했어요!';
+  $('#missionRewardMoney').textContent=money(m.reward);
+  $('#missionRewardXp').textContent=`${m.xp} XP`;
+  dlg.showModal();sound('level');
+ }
+ function closeMissionReward113(){const dlg=$('#missionRewardDialog');if(dlg?.open)dlg.close();missionRewardShowing113=false;setTimeout(showNextMissionReward113,80)}
+ $('#confirmMissionReward').onclick=closeMissionReward113;
+ $('#missionRewardDialog').addEventListener('cancel',e=>{e.preventDefault();closeMissionReward113()});
+
+ checkMission=function(){
+  let completed=false;
+  while((state.missionIndex||0)<missionDefs.length){
+   const i=state.missionIndex||0,m=missionDefs[i];if(m.value(state)<m.target)break;
+   state.money+=m.reward;state.missionIndex=i+1;addXp(m.xp);
+   missionRewardQueue113.push({...m});completed=true;
+  }
+  if(completed){save();renderMission();showNextMissionReward113()}
+  else renderMission();
+ };
+
+ function ensureFarmThemeLayer113(){
+  const wrap=$('#worldWrap');if(!wrap)return null;
+  let layer=wrap.querySelector('.farm-theme-layer');
+  if(!layer){layer=document.createElement('div');layer.className='farm-theme-layer';wrap.append(layer)}
+  return layer;
+ }
+ function applyFarmTheme113(){
+  const wrap=$('#worldWrap');if(!wrap)return;
+  ensureFarmThemeLayer113();
+  wrap.dataset.farmTheme=String(Math.max(0,Math.min(5,state.selectedFarm||0)));
+ }
+ const render113Base=render;
+ render=function(){render113Base();applyFarmTheme113();syncCowGauges109()};
 
  /* 1.0.8 persistent active-time clock + pause + negative balance settlement */
  /* 1.0.7 onboarding missions + distinct farm bonuses */
