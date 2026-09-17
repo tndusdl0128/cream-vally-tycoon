@@ -798,7 +798,13 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   }
   milking=true;milkLockUntil=now+85;moveTarget=null;pendingMilkCowId=null;keys={up:false,down:false,left:false,right:false};
   const index=farm().cows.indexOf(c),spot=cowSpots[Math.max(0,index)],prog=$('#actionProgress'),done=completed?total:Math.max(0,total-c.squeezeLeft);
-  prog.classList.add('show');prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-5.4)+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
+  prog.classList.add('show');
+  const cowEl=$(`.cow[data-id="${c.id}"]`),gaugeEl=cowEl?.querySelector('.cow-gauge'),worldRect=$('#world').getBoundingClientRect();
+  if(gaugeEl&&worldRect.width&&worldRect.height){
+   const gaugeRect=gaugeEl.getBoundingClientRect(),progSize=Math.max(12,prog.offsetWidth||14.5),cx=((gaugeRect.left+gaugeRect.width/2)-worldRect.left)/worldRect.width*100,cy=((gaugeRect.top-worldRect.top)-(progSize/2)-2)/worldRect.height*100;
+   prog.style.left=cx+'%';prog.style.top=cy+'%';
+  }else{prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-6.8)+'%'}
+  prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
   sound('milk');if(rare)floatText(`${products.find(x=>x.id===rare).icon} ${products.find(x=>x.id===rare).name}!`,spot.x,spot.y-8);if(completed)sparkle(spot.x,spot.y-5);refreshMilkUI();renderPlayer();
   clearTimeout(milkAnimationTimer);milkAnimationTimer=setTimeout(()=>{milking=false;renderPlayer()},115);
   clearTimeout(progressHideTimer);progressHideTimer=setTimeout(()=>prog.classList.remove('show'),260);
