@@ -146,6 +146,26 @@
     .cow-info-btn{display:none!important}
     .cow-rename-row{display:flex;gap:8px;align-items:center;margin:12px 0;padding:10px;border:1px solid #dce9e2;border-radius:14px;background:#f8fcf9}
     .cow-rename-row input{min-width:0;flex:1;border:1px solid #cfe0d7;border-radius:10px;padding:9px 10px;background:white;color:var(--ink);font-weight:850}
+
+    /* 1.0.10 젖소 충전 연출: 몸집/홍조가 게이지와 함께 서서히 변화 */
+    .cow{--cow-sx:1;--cow-sy:1;--cow-heat-opacity:0}
+    .cow-sprite,.cow-heat{transform:scale(var(--cow-sx),var(--cow-sy));transition:transform .22s linear,opacity .22s linear,filter .22s linear}
+    .cow-heat{opacity:var(--cow-heat-opacity);filter:none!important;animation:none!important}
+    .cow.overfull .cow-sprite,.cow.overfull .cow-heat{animation:cowDemandShiver .13s linear infinite!important}
+    .cow.overfull .cow-heat{opacity:var(--cow-heat-opacity)!important;filter:drop-shadow(0 0 4px rgba(255,65,65,.42))!important}
+    @keyframes cowDemandShiver{
+      0%,100%{transform:translateX(0) scale(var(--cow-sx),var(--cow-sy)) rotate(0deg)}
+      25%{transform:translateX(-1.2px) scale(var(--cow-sx),var(--cow-sy)) rotate(-.35deg)}
+      75%{transform:translateX(1.2px) scale(var(--cow-sx),var(--cow-sy)) rotate(.35deg)}
+    }
+    .cow-gauge{top:-10%!important;width:43%!important;height:6px!important;box-shadow:0 2px 6px rgba(23,61,55,.24)}
+    .cow-gauge i{transition:width .18s linear!important}
+    .cow.overfull .cow-gauge{animation:cowGaugeUrgent .68s ease-in-out infinite alternate}
+    @keyframes cowGaugeUrgent{to{transform:translateX(-50%) scale(1.08);box-shadow:0 0 9px rgba(255,76,84,.72)}}
+    .cow-full-status{right:-5%!important;top:1%!important;font-size:clamp(11px,1.35vw,19px)!important}
+    .cow.overfull .cow-full-status{display:block;animation:cowSweatUrgent .48s ease-in-out infinite alternate!important}
+    @keyframes cowSweatUrgent{to{transform:translate(2px,-4px) rotate(8deg) scale(1.08)}}
+
 </style>
 </head>
 <body>
@@ -229,27 +249,27 @@
 (()=>{'use strict';
 const SAVE_KEY='cream-valley-tycoon-save-v2';
 const cowTypes=[
- {name:'별이',label:'홀스타인',color:'#2e3737',price:10000,mult:1,lv:1,t:0,atlas:0,pos:0,desc:'튼튼하고 꾸준한 기본 젖소'},
- {name:'딸기',label:'핑크 젖소',color:'#f58fa9',price:29000,mult:1.2,lv:3,t:0,atlas:0,pos:1,desc:'우유 생산량 20% 증가'},
- {name:'구름',label:'블루 젖소',color:'#68aef1',price:69000,mult:1.5,lv:6,t:1,atlas:0,pos:2,desc:'우유 생산량 50% 증가'},
- {name:'코코아',label:'브라운 젖소',color:'#8b5637',price:121000,mult:1.75,lv:9,t:1,atlas:1,pos:0,desc:'진한 우유를 넉넉히 생산'},
- {name:'햇살',label:'골드 젖소',color:'#f3c34f',price:231000,mult:2.1,lv:12,t:2,atlas:0,pos:3,desc:'우유 생산량 110% 증가'},
- {name:'새싹',label:'민트 젖소',color:'#78c88b',price:413000,mult:2.45,lv:16,t:2,atlas:1,pos:1,desc:'영양 목초와 궁합이 좋아요'},
- {name:'라일락',label:'퍼플 젖소',color:'#a67be8',price:715000,mult:2.9,lv:20,t:3,atlas:0,pos:4,desc:'프리미엄 우유 전문 젖소'},
- {name:'루비',label:'레드 젖소',color:'#dc4239',price:1320000,mult:3.5,lv:24,t:3,atlas:1,pos:2,desc:'희귀 우유 확률이 더 높아요'},
- {name:'밤하늘',label:'스타 젖소',color:'#263654',price:2640000,mult:4.2,lv:29,t:4,atlas:1,pos:3,desc:'별빛 우유 확률 두 배'},
- {name:'오로라',label:'레인보우 젖소',color:'#e8a9e7',price:5225000,mult:5.2,lv:35,t:4,atlas:1,pos:4,desc:'최고 등급의 전설 젖소'}
+ {name:'홀스타인',label:'홀스타인',color:'#2e3737',price:10000,mult:1,lv:1,t:0,atlas:0,pos:0,desc:'튼튼하고 꾸준한 기본 젖소'},
+ {name:'핑크젖소',label:'핑크젖소',color:'#f58fa9',price:29000,mult:1.2,lv:3,t:0,atlas:0,pos:1,desc:'우유 생산량 20% 증가'},
+ {name:'블루젖소',label:'블루젖소',color:'#68aef1',price:69000,mult:1.5,lv:6,t:1,atlas:0,pos:2,desc:'우유 생산량 50% 증가'},
+ {name:'브라운젖소',label:'브라운젖소',color:'#8b5637',price:121000,mult:1.75,lv:9,t:1,atlas:1,pos:0,desc:'진한 우유를 넉넉히 생산'},
+ {name:'골드젖소',label:'골드젖소',color:'#f3c34f',price:231000,mult:2.1,lv:12,t:2,atlas:0,pos:3,desc:'우유 생산량 110% 증가'},
+ {name:'민트젖소',label:'민트젖소',color:'#78c88b',price:413000,mult:2.45,lv:16,t:2,atlas:1,pos:1,desc:'영양 목초와 궁합이 좋아요'},
+ {name:'퍼플젖소',label:'퍼플젖소',color:'#a67be8',price:715000,mult:2.9,lv:20,t:3,atlas:0,pos:4,desc:'프리미엄 우유 전문 젖소'},
+ {name:'레드젖소',label:'레드젖소',color:'#dc4239',price:1320000,mult:3.5,lv:24,t:3,atlas:1,pos:2,desc:'희귀 우유 확률이 더 높아요'},
+ {name:'스타젖소',label:'스타젖소',color:'#263654',price:2640000,mult:4.2,lv:29,t:4,atlas:1,pos:3,desc:'별빛 우유 확률 두 배'},
+ {name:'레인보우젖소',label:'레인보우젖소',color:'#e8a9e7',price:5225000,mult:5.2,lv:35,t:4,atlas:1,pos:4,desc:'최고 등급의 전설 젖소'}
 
 ];
 const cowTraits=[
  {icon:'🤝',name:'사람을 잘 따름',desc:'착유 완료 시 친밀도를 2씩 얻습니다.',bondGain:2},
  {icon:'🍓',name:'요거트 장인',desc:'이 목장에 있으면 요거트 완성 시 20% 확률로 1개를 더 만듭니다.',yogurtBonus:.20},
- {icon:'🌧️',name:'빗속의 구름',desc:'봄비가 오는 날 우유가 25% 더 빠르게 찹니다.',rainRate:1.25},
+ {icon:'🌧️',name:'비 오는 날 활력',desc:'봄비가 오는 날 우유가 25% 더 빠르게 찹니다.',rainRate:1.25},
  {icon:'🧀',name:'치즈 밀크',desc:'이 목장에 있으면 치즈 계열 가공 시간이 12% 감소합니다.',cheeseSpeed:.12},
- {icon:'☀️',name:'햇살 행운',desc:'맑은 날 고품질·희귀 우유 등장 확률이 올라갑니다.',sunRare:.05},
+ {icon:'☀️',name:'맑은 날 행운',desc:'맑은 날 고품질·희귀 우유 등장 확률이 올라갑니다.',sunRare:.05},
  {icon:'🌱',name:'목초 애호가',desc:'영양 목초 연구 완료 시 자신의 우유 충전 속도가 추가로 20% 증가합니다.',feedRate:1.20},
  {icon:'💜',name:'프리미엄 체질',desc:'고품질 우유 등장 확률이 크게 증가합니다.',qualityRare:.10},
- {icon:'💎',name:'루비의 행운',desc:'별빛 우유 등장 확률이 크게 증가합니다.',starRare:.08},
+ {icon:'💎',name:'희귀 우유 행운',desc:'별빛 우유 등장 확률이 크게 증가합니다.',starRare:.08},
  {icon:'🌌',name:'별의 축복',desc:'별빛 우유 등장 확률이 기본의 2배가 됩니다.',starDouble:true},
  {icon:'🌈',name:'오로라 전설',desc:'오로라 밀크를 얻을 수 있으며 모든 희귀 우유 확률이 가장 높습니다.',auroraRare:.06,qualityRare:.08,starRare:.08}
 ];
@@ -383,7 +403,7 @@ function renderCows(){const w=$('#world');w.querySelectorAll('.cow').forEach(e=>
 function renderPlayer(){const p=state.player,el=$('#player');el.style.left=p.x+'%';el.style.top=p.y+'%';el.style.backgroundPosition=`${(milking?4:p.dir)*25}% 100%`;el.classList.toggle('milking',milking)}
 function renderFactory(){const l=level(),slots=state.buildings.factory,speed=Math.max(.45,1-state.buildings.factorySpeed*.12-(state.staff.foreman?.15:0));$('#factorySlots').textContent=`가동 ${state.jobs.length}/${slots}`;$('#jobs').innerHTML=state.jobs.length?state.jobs.map(j=>{const r=recipes.find(x=>x.id===j.type),total=r.time*speed,left=Math.max(0,(j.finish-Date.now())/1000),pct=Math.max(0,100-left/total*100);return `<div class="job">${r.icon} ${r.name} 만드는 중 · ${Math.ceil(left)}초<div class="job-track"><i style="width:${pct}%"></i></div></div>`}).join(''):'';$('#recipes').innerHTML=recipes.map(r=>{const lock=l<r.lv,needs=Object.entries(r.req).map(([id,n])=>`${products.find(p=>p.id===id).icon}${n}`).join(' + ');return `<div class="product-card ${lock?'locked':''}"><div class="product-top"><div class="product-icon">${r.icon}</div><div class="product-copy"><b>${r.name}</b><small>${lock?`플레이 Lv.${r.lv}에서 해금`:`재료 ${needs} · ${Math.ceil(r.time*speed)}초 · 판매 ${money(unitValue(r.id))}`}</small></div></div><button class="recipe-btn" data-recipe="${r.id}" ${lock?'disabled':''} style="margin-top:10px">가공 시작</button>${saleControls(r.id)}</div>`}).join('')}
 function renderFactoryProgress(){const slots=state.buildings.factory,speed=Math.max(.45,1-state.buildings.factorySpeed*.12-(state.staff.foreman?.15:0));$('#factorySlots').textContent=`가동 ${state.jobs.length}/${slots}`;$('#jobs').innerHTML=state.jobs.length?state.jobs.map(j=>{const r=recipes.find(x=>x.id===j.type),total=r.time*speed,left=Math.max(0,(j.finish-Date.now())/1000),pct=Math.max(0,100-left/total*100);return `<div class="job">${r.icon} ${r.name} 만드는 중 · ${Math.ceil(left)}초<div class="job-track"><i style="width:${pct}%"></i></div></div>`}).join(''):''}
-function renderShop(){const t=tier(),l=level(),f=farm();$('#cowShop').innerHTML=`<div class="benefit">젖소 도감 ${new Set(state.farms.flatMap(x=>x.cows.map(c=>c.type))).size}/${cowTypes.length}종 · 직접 착유할수록 친밀도가 올라 생산량이 증가합니다. <b>ⓘ 버튼</b>에서 개별 특성을 확인할 수 있어요.</div>`+cowTypes.map((c,i)=>{const lock=l<c.lv||t<c.t,owned=state.farms.reduce((n,x)=>n+x.cows.filter(q=>q.type===i).length,0);return `<div class="shop-card ${lock?'locked':''}"><div class="shop-top"><span class="cow-dot" style="background:${c.color}"></span><div class="shop-copy"><b>${c.name} · ${c.label} <small>보유 ${owned}</small></b><small>${lock?`Lv.${c.lv} · ${tiers[c.t].name} 필요`:`${c.desc}<br>${c.traitIcon} ${c.traitName}`}</small></div><b>${money(c.price)}</b></div><div class="benefit" style="margin-top:8px"><b>${c.traitIcon} ${c.name}의 고유 특성: ${c.traitName||'고유 특성'}</b><br>${cowTraits[i]?.desc||''}</div><button class="buy-btn" data-buycow="${i}" ${lock||f.cows.length>=5?'disabled':''} style="margin-top:9px">${f.cows.length>=5?'목장이 가득 찼어요':lock?'아직 구입 불가':'분양받기'}</button></div>`}).join('')}
+function renderShop(){const t=tier(),l=level(),f=farm();$('#cowShop').innerHTML=`<div class="benefit">젖소 도감 ${new Set(state.farms.flatMap(x=>x.cows.map(c=>c.type))).size}/${cowTypes.length}종 · 직접 착유할수록 친밀도가 올라 생산량이 증가합니다. 젖소를 <b>길게 누르거나 더블클릭</b>하면 개별 특성과 이름을 확인할 수 있어요.</div>`+cowTypes.map((c,i)=>{const lock=l<c.lv||t<c.t,owned=state.farms.reduce((n,x)=>n+x.cows.filter(q=>q.type===i).length,0);return `<div class="shop-card ${lock?'locked':''}"><div class="shop-top"><span class="cow-dot" style="background:${c.color}"></span><div class="shop-copy"><b>${c.label} <small>보유 ${owned}</small></b><small>${lock?`Lv.${c.lv} · ${tiers[c.t].name} 필요`:`${c.desc}<br>${c.traitIcon} ${c.traitName}`}</small></div><b>${money(c.price)}</b></div><div class="benefit" style="margin-top:8px"><b>${c.traitIcon} ${c.label}의 고유 특성: ${c.traitName||'고유 특성'}</b><br>${cowTraits[i]?.desc||''}</div><button class="buy-btn" data-buycow="${i}" ${lock||f.cows.length>=5?'disabled':''} style="margin-top:9px">${f.cows.length>=5?'목장이 가득 찼어요':lock?'아직 구입 불가':'분양받기'}</button></div>`}).join('')}
 function renderCompany(){const t=tier(),l=level(),cur=tiers[t],next=tiers[t+1],nextXp=xpNeed(l+1),prevXp=xpNeed(l);$('#revenueText').textContent='누적 매출 '+money(state.revenue);$('#tierName').textContent=`기업 ${t+1}단계 · ${cur.name}`;$('#tierBenefit').textContent=cur.benefit;let pct=100;if(next)pct=Math.max(0,Math.min(100,(state.revenue-cur.need)/(next.need-cur.need)*100));$('#tierProgress').style.width=pct+'%';$('#tierNext').textContent=next?`다음 단계까지 ${money(next.need-state.revenue)}`:'최고 기업 단계에 도달했습니다!';$('#levelText').textContent=`플레이 레벨 ${l}`;$('#xpText').textContent=`${state.xp-prevXp} / ${nextXp-prevXp} XP`;$('#xpProgress').style.width=Math.max(0,Math.min(100,(state.xp-prevXp)/(nextXp-prevXp)*100))+'%';$('#maintenanceText').textContent=`다음 날 예상 사료비·시설 유지비 ${money(maintenance())}`;$('#tierPath').innerHTML=tiers.map((x,i)=>`<div class="tier-step ${i<t?'done':i===t?'current':''}"><i>${i<t?'✓':i+1}</i><span><b>${x.name}</b><small style="display:block">누적 매출 ${money(x.need)} · 목장 ${x.maxFarms}곳</small></span></div>`).join('');renderBuildings();$('#researchGrid').innerHTML=research.map(r=>{const labLock=state.buildings.lab<r.lab;return `<div class="research-card"><b>${r.icon} ${r.name}</b><small>${labLock?`연구소 ${r.lab}단계 필요`:r.desc}</small><button class="buy-btn" data-research="${r.id}" ${state.upgrades[r.id]||labLock?'disabled':''}>${state.upgrades[r.id]?'연구 완료':labLock?'연구소 필요':money(r.cost)}</button></div>`}).join('');$('#staffGrid').innerHTML=staffDefs.map(s=>{const lock=level()<s.lv;return `<div class="research-card"><b>${s.icon} ${s.name}</b><small>${lock?`플레이 Lv.${s.lv} 필요`:`${s.desc} · 일급 ${money(s.salary)}`}</small><button class="buy-btn" data-staff="${s.id}" ${state.staff[s.id]||lock?'disabled':''}>${state.staff[s.id]?'고용 중':lock?'레벨 부족':money(s.cost)}</button></div>`}).join('');$('#badgeGrid').innerHTML=badges.map(b=>`<div class="badge ${b.done(state)?'done':''}"><i>${b.icon}</i><b>${b.name}</b><small>${b.desc}</small></div>`).join('');$('#farmCount').textContent=`${state.farms.length}/${cur.maxFarms}곳`;const farmIcons=['🏡','🌿','🌊','🍁','🌌','🌈'];$('#farmList').innerHTML=state.farms.map((f,i)=>`<div class="farm-card"><div class="farm-top"><div class="farm-icon">${farmIcons[i]}</div><div class="farm-copy"><b>${f.name}</b><small>젖소 ${f.cows.length}마리 · ${i===state.selectedFarm?'운영 중':'이동 가능'}</small><small class="farm-effect-line">${farmEffects[i].icon} ${farmEffects[i].name} · ${farmEffects[i].short}</small></div></div>${i!==state.selectedFarm?`<button class="buy-btn" data-farm="${i}" style="margin-top:9px">이 목장으로 이동</button>`:''}</div>`).join('')+(state.farms.length<cur.maxFarms?`<div class="farm-card"><div class="farm-top"><div class="farm-icon">➕</div><div class="farm-copy"><b>${farmNames[state.farms.length]} 인수</b><small>새 젖소 5마리를 키울 수 있어요</small><small class="farm-effect-line">${farmEffects[state.farms.length].icon} ${farmEffects[state.farms.length].short}</small></div><b>${money(farmCosts[state.farms.length])}</b></div><button class="primary" id="buyFarm" style="margin-top:9px">새 목장 인수하기</button></div>`:'');const buy=$('#buyFarm');if(buy&&l<farmLevelReq[state.farms.length]){buy.disabled=true;buy.textContent=`플레이 Lv.${farmLevelReq[state.farms.length]} 필요`}}
 function renderBuildings(){const t=tier(),b=state.buildings,factoryCost=Math.round(99000*Math.pow(2.15,b.factory-1)),labCosts=[50000,300000,1320000],speedCost=110000*(b.factorySpeed+1);$('#buildingsGrid').innerHTML=`<div class="building-card"><div class="build-head"><i>🏭</i><div><b>생산공장 ${b.factory}동</b><small>동시에 유제품 ${b.factory}개 가공 · 최대 ${tiers[t].maxFactories}동</small></div></div><button class="buy-btn" data-building="factory" ${b.factory>=tiers[t].maxFactories?'disabled':''} style="margin-top:9px">${b.factory>=tiers[t].maxFactories?'기업 단계를 높여야 증축 가능':`공장 증축 · ${money(factoryCost)}`}</button></div><div class="building-card"><div class="build-head"><i>🧪</i><div><b>연구소 ${b.lab}단계</b><small>${b.lab?'신기술 연구 가능':'연구소를 지어야 목장 연구를 시작할 수 있어요'}</small></div></div><button class="buy-btn" data-building="lab" ${b.lab>=3?'disabled':''} style="margin-top:9px">${b.lab>=3?'최고 단계':`${b.lab?'연구소 증축':'연구소 건설'} · ${money(labCosts[b.lab])}`}</button></div><div class="building-card"><div class="build-head"><i>⚙️</i><div><b>생산라인 속도 ${b.factorySpeed}단계</b><small>단계당 모든 가공시간 12% 감소</small></div></div><button class="buy-btn" data-building="speed" ${b.lab<1||b.factorySpeed>=3?'disabled':''} style="margin-top:9px">${b.lab<1?'연구소 필요':b.factorySpeed>=3?'최고 단계':`라인 개선 · ${money(speedCost)}`}</button></div>`}
 function update(dt){if(!milking){let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);if(dx||dy){moveTarget=null;pendingMilkCowId=null}else if(moveTarget){dx=moveTarget.x-state.player.x;dy=moveTarget.y-state.player.y;if(Math.hypot(dx,dy)<.75){state.player.x=moveTarget.x;state.player.y=moveTarget.y;moveTarget=null;dx=0;dy=0;const cowId=pendingMilkCowId;pendingMilkCowId=null;if(cowId)setTimeout(()=>doMilk(cowId),0)}}if(dx||dy){const l=Math.hypot(dx,dy),speed=state.upgrades.boots?27.5:22,step=Math.min(l,speed*dt);dx/=l;dy/=l;state.player.x=Math.max(5,Math.min(95,state.player.x+dx*step));state.player.y=Math.max(27,Math.min(95,state.player.y+dy*step));if(Math.abs(dx)>Math.abs(dy))state.player.dir=dx>0?3:2;else state.player.dir=dy>0?0:1;$('#player').classList.add('walking')}else $('#player').classList.remove('walking')}
@@ -496,11 +516,11 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
  startRecipe=function(id){
   const before=state.jobs.length;traitStartRecipe(id);if(state.jobs.length<=before)return;
   const r=recipes.find(x=>x.id===id),hasCheeseTrait=farm().cows.some(c=>cowTypes[c.type].cheeseSpeed);
-  if(r&&hasCheeseTrait&&(id==='cheese'||id==='agedcheese')){const j=state.jobs[state.jobs.length-1],cut=.12,duration=j.finish-j.start;j.finish=j.start+Math.ceil(duration*(1-cut));toast('🧀 코코아의 특성으로 치즈 가공 시간이 12% 단축됐어요.','good');renderFactoryProgress();save()}if(r&&state.selectedFarm===2&&(id==='yogurt'||id==='cream')){const j=state.jobs[state.jobs.length-1],duration=j.finish-j.start;j.finish=j.start+Math.ceil(duration*.90);toast('🌊 푸른 호수 목장 효과! 가공 시간이 10% 단축됐어요.','good');renderFactoryProgress();save()}
+  if(r&&hasCheeseTrait&&(id==='cheese'||id==='agedcheese')){const j=state.jobs[state.jobs.length-1],cut=.12,duration=j.finish-j.start;j.finish=j.start+Math.ceil(duration*(1-cut));toast('🧀 브라운젖소 특성으로 치즈 가공 시간이 12% 단축됐어요.','good');renderFactoryProgress();save()}if(r&&state.selectedFarm===2&&(id==='yogurt'||id==='cream')){const j=state.jobs[state.jobs.length-1],duration=j.finish-j.start;j.finish=j.start+Math.ceil(duration*.90);toast('🌊 푸른 호수 목장 효과! 가공 시간이 10% 단축됐어요.','good');renderFactoryProgress();save()}
  };
  const traitProcessJobs=processJobs;
  processJobs=function(){
-  const before=state.yogurt||0;traitProcessJobs();const made=(state.yogurt||0)-before;if(made>0){state.missionProgress=state.missionProgress||{yogurtMade:0};state.missionProgress.yogurtMade+=made;checkMission()}if(made>0&&farm().cows.some(c=>cowTypes[c.type].yogurtBonus)&&Math.random()<.20){state.yogurt++;state.missionProgress.yogurtMade++;toast('🍓 딸기의 특성 발동! 요거트가 1개 더 완성됐어요.','good');render();save()}
+  const before=state.yogurt||0;traitProcessJobs();const made=(state.yogurt||0)-before;if(made>0){state.missionProgress=state.missionProgress||{yogurtMade:0};state.missionProgress.yogurtMade+=made;checkMission()}if(made>0&&farm().cows.some(c=>cowTypes[c.type].yogurtBonus)&&Math.random()<.20){state.yogurt++;state.missionProgress.yogurtMade++;toast('🍓 핑크젖소 특성 발동! 요거트가 1개 더 완성됐어요.','good');render();save()}
  };
  function showDaySummary(endedDay,days,cost,incident,summary){
   const revenue=summary.salesRevenue+summary.orderRevenue,net=revenue-cost-incident;
@@ -544,7 +564,7 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
 
  /* 1.0.9 cow interaction polish + smooth milk gauge + renaming */
  const escHtml109=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
- function cowDisplayName109(c){return (c&&c.name&&String(c.name).trim())||cowTypes[c?.type||0].name}
+ function cowDisplayName109(c){return (c&&c.name&&String(c.name).trim())||cowTypes[c?.type||0].label}
  state.farms.forEach(f=>f.cows.forEach(c=>{if(c.squeezeLeft&&!c.lastMilkAt){delete c.squeezeLeft;delete c.squeezeTotal}}));
 
  const renderCows109Base=renderCows;
@@ -557,12 +577,23 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
    el.style.outline='none';el.style.webkitTapHighlightColor='transparent';
    el.title=`${cowDisplayName109(c)} · ${cowTypes[c.type].label} · 친밀도 ${c.bond||0}`;
    el.setAttribute('aria-label',`${cowDisplayName109(c)} 젖소 · 친밀도 ${c.bond||0} · 우유 ${Math.round(c.fill/5*100)}%`);
-  })
+  });
+  syncCowGauges109();
  };
 
  function syncCowGauges109(){
   const cows=farm().cows,els=$$('.cow');
-  els.forEach((el,i)=>{const c=cows[i];if(!c)return;const g=el.querySelector('.cow-gauge i');if(g)g.style.width=`${Math.max(0,Math.min(100,c.fill/5*100))}%`})
+  els.forEach((el,i)=>{
+   const c=cows[i];if(!c)return;
+   const fill=Math.max(0,Math.min(1,c.fill/5)),pct=fill*100,g=el.querySelector('.cow-gauge i');
+   if(g)g.style.width=`${pct}%`;
+   // 우유가 찰수록 몸이 아주 조금씩 통통해지고, 20% 이후부터 홍조가 서서히 올라옵니다.
+   const sx=1+fill*.14,sy=1+fill*.075,heat=Math.max(0,(fill-.20)/.80)*.34;
+   el.style.setProperty('--cow-sx',sx.toFixed(4));
+   el.style.setProperty('--cow-sy',sy.toFixed(4));
+   el.style.setProperty('--cow-heat-opacity',heat.toFixed(3));
+   el.classList.toggle('overfull',fill>=.96);
+  })
  }
  const update109Base=update;
  update=function(dt){
@@ -581,8 +612,8 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
 
  openCowProfile=function(id){
   const c=farm().cows.find(x=>x.id===id);if(!c)return;
-  const t=cowTypes[c.type],bond=Math.min(100,c.bond||0),rc=rareChances(c),name=cowDisplayName109(c);
-  $('#cowProfileBody').innerHTML=`<div class="cow-profile-head"><div class="cow-profile-avatar">🐮</div><div><b style="font-size:20px">${escHtml109(name)} · ${escHtml109(t.label)}</b><small>${escHtml109(t.desc)}</small><div class="bond-track"><i style="width:${bond}%"></i></div><small>♥ 친밀도 ${bond}/100 · 생산 보너스 +${Math.round(Math.min(.25,bond*.0025)*100)}%</small></div></div><div class="cow-rename-row"><input id="cowRenameInput" maxlength="12" value="${escHtml109(name)}" aria-label="젖소 이름"><button type="button" class="small-btn" data-rename-cow="${c.id}">이름 저장</button></div><div class="trait-card"><b>${t.traitIcon} ${escHtml109(t.traitName||'고유 특성')}</b>${escHtml109(cowTraits[c.type]?.desc||'')}</div><div class="trait-card"><b>${farmEffects[state.selectedFarm].icon} ${escHtml109(farm().name)} 효과</b>${escHtml109(farmEffects[state.selectedFarm].desc)}</div><div class="rare-guide"><b>🥛 이번 젖소의 희귀 우유 확률</b><div class="rare-row"><span>✨ 고품질 우유</span><span>${(rc.quality*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌟 별빛 우유</span><span>${(rc.star*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌈 오로라 밀크</span><span>${rc.aurora?(rc.aurora*100).toFixed(1)+'%':'획득 불가'}</span></div></div><small style="display:block;margin-top:12px;color:#69827d;font-weight:750">PC: 젖소 더블클릭 · 모바일: 젖소를 길게 누르면 정보가 열립니다.</small>`;
+  const t=cowTypes[c.type],bond=Math.min(100,c.bond||0),rc=rareChances(c),name=cowDisplayName109(c),hasCustom=!!(c.name&&String(c.name).trim()),profileTitle=hasCustom?`${name} · ${t.label}`:t.label;
+  $('#cowProfileBody').innerHTML=`<div class="cow-profile-head"><div class="cow-profile-avatar">🐮</div><div><b style="font-size:20px">${escHtml109(profileTitle)}</b><small>${escHtml109(t.desc)}</small><div class="bond-track"><i style="width:${bond}%"></i></div><small>♥ 친밀도 ${bond}/100 · 생산 보너스 +${Math.round(Math.min(.25,bond*.0025)*100)}%</small></div></div><div class="cow-rename-row"><input id="cowRenameInput" maxlength="12" value="${escHtml109(name)}" aria-label="젖소 이름"><button type="button" class="small-btn" data-rename-cow="${c.id}">이름 저장</button></div><div class="trait-card"><b>${t.traitIcon} ${escHtml109(t.traitName||'고유 특성')}</b>${escHtml109(cowTraits[c.type]?.desc||'')}</div><div class="trait-card"><b>${farmEffects[state.selectedFarm].icon} ${escHtml109(farm().name)} 효과</b>${escHtml109(farmEffects[state.selectedFarm].desc)}</div><div class="rare-guide"><b>🥛 이번 젖소의 희귀 우유 확률</b><div class="rare-row"><span>✨ 고품질 우유</span><span>${(rc.quality*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌟 별빛 우유</span><span>${(rc.star*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌈 오로라 밀크</span><span>${rc.aurora?(rc.aurora*100).toFixed(1)+'%':'획득 불가'}</span></div></div><small style="display:block;margin-top:12px;color:#69827d;font-weight:750">PC: 젖소 더블클릭 · 모바일: 젖소를 길게 누르면 정보가 열립니다.</small>`;
   $('#cowProfileDialog').showModal();
  };
 
