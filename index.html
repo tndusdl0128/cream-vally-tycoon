@@ -440,6 +440,43 @@
 .order-detail-modal{padding-bottom:18px}.order-detail-hero{display:flex;align-items:center;gap:12px;margin:12px 0}.order-detail-hero i{width:52px;height:52px;border-radius:16px;background:#eff7f2;display:grid;place-items:center;font-style:normal;font-size:30px}.order-detail-hero b,.order-detail-hero span{display:block}.order-detail-hero span{font-size:12px;color:#6c817a;font-weight:800;margin-top:3px}.order-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.order-detail-box{padding:10px;border-radius:13px;background:#f2f7f4;font-size:11px;color:#6b7f79;font-weight:800}.order-detail-box b{display:block;color:#294f45;font-size:13px;margin-top:3px}.order-detail-note{padding:10px 12px;border-radius:13px;background:#fff7df;color:#735b21;font-size:11px;font-weight:850;line-height:1.45;margin:10px 0}.order-detail-actions{display:flex;gap:8px;margin-top:13px}.order-detail-actions button{flex:1}.order-detail-trust{margin-top:10px}
 @media(max-width:480px){.order-card.compact-order{padding:8px 9px!important}.compact-order-icon{width:31px;height:31px;font-size:18px}.compact-order-right{min-width:70px}.order-detail-grid{gap:6px}}
 
+
+/* 1.0.18 젖소 몸집 증가/떨림 강제 적용 */
+.cow > .cow-growth-wrap{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  transform-origin:50% 68%!important;
+  transition:transform .16s linear!important;
+}
+.cow > .cow-growth-wrap > .cow-shiver-wrap{
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  transform-origin:50% 68%!important;
+}
+.cow > .cow-growth-wrap > .cow-shiver-wrap > .cow-sprite,
+.cow > .cow-growth-wrap > .cow-shiver-wrap > .cow-heat{
+  position:absolute!important;
+  inset:0!important;
+  transform:none!important;
+  scale:none!important;
+  animation:none!important;
+}
+.cow.overfull > .cow-growth-wrap > .cow-shiver-wrap{
+  animation:cowShiver118 3s linear infinite!important;
+}
+@keyframes cowShiver118{
+  0%,86%,100%{transform:translateX(0) rotate(0deg)}
+  88%{transform:translateX(-2.6px) rotate(-1deg)}
+  90%{transform:translateX(2.6px) rotate(1deg)}
+  92%{transform:translateX(-2.2px) rotate(-.8deg)}
+  94%{transform:translateX(2.2px) rotate(.8deg)}
+  96%{transform:translateX(-1.4px) rotate(-.5deg)}
+  98%{transform:translateX(1.4px) rotate(.5deg)}
+}
+
 </style>
 </head>
 <body>
@@ -1043,10 +1080,20 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
    const c=cows[i];if(!c)return;
    const fill=Math.max(0,Math.min(1,c.fill/5)),pct=fill*100,g=el.querySelector('.cow-gauge i');
    if(g)g.style.width=`${pct}%`;
-   const sx=1+fill*.24,sy=1+fill*.08,heat=Math.max(0,(fill-.20)/.80)*.34;
+
+   // 우유량과 1:1로 확실하게 커지도록 CSS 변수만 믿지 않고 실제 wrapper transform을 직접 갱신합니다.
+   const sx=1+fill*.34,sy=1+fill*.12,heat=Math.max(0,(fill-.20)/.80)*.34;
    el.style.setProperty('--cow-sx',sx.toFixed(4));
    el.style.setProperty('--cow-sy',sy.toFixed(4));
    el.style.setProperty('--cow-heat-opacity',heat.toFixed(3));
+   const growth=el.querySelector('.cow-growth-wrap');
+   if(growth)growth.style.setProperty('transform',`scale(${sx.toFixed(4)},${sy.toFixed(4)})`,'important');
+   else{
+    const sprite=el.querySelector('.cow-sprite');
+    if(sprite)sprite.style.setProperty('transform',`scale(${sx.toFixed(4)},${sy.toFixed(4)})`,'important');
+   }
+   const heatLayer=el.querySelector('.cow-heat');
+   if(heatLayer)heatLayer.style.opacity=heat.toFixed(3);
    el.classList.toggle('overfull',fill>=.96);
   });
  };
@@ -1123,14 +1170,17 @@ const renderCows116Base=renderCows;
 renderCows=function(){
   renderCows116Base();
   $$('.cow').forEach(el=>{
-    const sprite=el.querySelector(':scope > .cow-sprite');
-    const heat=el.querySelector(':scope > .cow-heat');
+    const sprite=el.querySelector('.cow-sprite');
+    const heat=el.querySelector('.cow-heat');
     if(sprite||heat){
-      const wrap=document.createElement('span');
-      wrap.className='cow-growth-wrap';
-      if(sprite)wrap.appendChild(sprite);
-      if(heat)wrap.appendChild(heat);
-      el.insertBefore(wrap,el.firstChild);
+      const growth=document.createElement('span');
+      growth.className='cow-growth-wrap';
+      const shiver=document.createElement('span');
+      shiver.className='cow-shiver-wrap';
+      if(sprite)shiver.appendChild(sprite);
+      if(heat)shiver.appendChild(heat);
+      growth.appendChild(shiver);
+      el.insertBefore(growth,el.firstChild);
     }
   });
   syncCowGauges109();
