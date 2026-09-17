@@ -329,7 +329,7 @@
 .farm-wildlife.dir-lr,.farm-wildlife.dir-rl,.farm-wildlife.dir-bltr,.farm-wildlife.dir-trbl{filter:drop-shadow(0 1px 1px rgba(23,61,55,.10))!important}
 
 /* milking progress: transparent-center yellow donut */
-.action-progress{width:58px!important;height:58px!important;background:conic-gradient(var(--gold) var(--p),rgba(23,61,55,.18) 0)!important;box-shadow:0 3px 12px rgba(23,61,55,.14)!important;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 0)}
+.action-progress{width:14.5px!important;height:14.5px!important;transform:translate(-50%,-50%)!important;background:conic-gradient(var(--gold) var(--p),rgba(23,61,55,.16) 0)!important;box-shadow:0 1px 4px rgba(23,61,55,.16)!important;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 0)}
 .action-progress::after{content:none!important;display:none!important}
 </style>
 </head>
@@ -752,7 +752,7 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   }
   milking=true;milkLockUntil=now+85;moveTarget=null;pendingMilkCowId=null;keys={up:false,down:false,left:false,right:false};
   const index=farm().cows.indexOf(c),spot=cowSpots[Math.max(0,index)],prog=$('#actionProgress'),done=completed?total:Math.max(0,total-c.squeezeLeft);
-  prog.classList.add('show');prog.style.left=spot.x+'%';prog.style.top=spot.y+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
+  prog.classList.add('show');prog.style.left=(spot.x+2.9)+'%';prog.style.top=(spot.y-14.2)+'%';prog.style.setProperty('--p',(done/total*360)+'deg');prog.dataset.text='';
   sound('milk');if(rare)floatText(`${products.find(x=>x.id===rare).icon} ${products.find(x=>x.id===rare).name}!`,spot.x,spot.y-8);if(completed)sparkle(spot.x,spot.y-5);refreshMilkUI();renderPlayer();
   clearTimeout(milkAnimationTimer);milkAnimationTimer=setTimeout(()=>{milking=false;renderPlayer()},115);
   clearTimeout(progressHideTimer);progressHideTimer=setTimeout(()=>prog.classList.remove('show'),260);
@@ -865,7 +865,7 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
  openCowProfile=function(id){
   const c=farm().cows.find(x=>x.id===id);if(!c)return;
   const t=cowTypes[c.type],bond=Math.min(100,c.bond||0),rc=rareChances(c),name=cowDisplayName109(c),hasCustom=!!(c.name&&String(c.name).trim()),profileTitle=hasCustom?`${name} · ${t.label}`:t.label;
-  $('#cowProfileBody').innerHTML=`<div class="cow-profile-head"><div class="cow-profile-avatar">🐮</div><div><b style="font-size:20px">${escHtml109(profileTitle)}</b><small>${escHtml109(t.desc)}</small><div class="bond-track"><i style="width:${bond}%"></i></div><small>♥ 친밀도 ${bond}/100 · 생산 보너스 +${Math.round(Math.min(.25,bond*.0025)*100)}%</small></div></div><div class="cow-rename-row"><input id="cowRenameInput" maxlength="12" value="${escHtml109(name)}" aria-label="젖소 이름"><button type="button" class="small-btn" data-rename-cow="${c.id}">이름 저장</button></div><div class="trait-card"><b>${t.traitIcon} ${escHtml109(t.traitName||'고유 특성')}</b>${escHtml109(cowTraits[c.type]?.desc||'')}</div><div class="trait-card"><b>${farmEffects[state.selectedFarm].icon} ${escHtml109(farm().name)} 효과</b>${escHtml109(farmEffects[state.selectedFarm].desc)}</div><div class="rare-guide"><b>🥛 이번 젖소의 희귀 우유 확률</b><div class="rare-row"><span>✨ 고품질 우유</span><span>${(rc.quality*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌟 별빛 우유</span><span>${(rc.star*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌈 오로라 밀크</span><span>${rc.aurora?(rc.aurora*100).toFixed(1)+'%':'획득 불가'}</span></div></div><small style="display:block;margin-top:12px;color:#69827d;font-weight:750">PC: 젖소 더블클릭 · 모바일: 젖소를 길게 누르면 정보가 열립니다.</small>`;
+  $('#cowProfileBody').innerHTML=`<div class="cow-profile-head"><div class="cow-profile-avatar">🐮</div><div><b style="font-size:20px">${escHtml109(profileTitle)}</b><small>${escHtml109(t.desc)}</small><div class="bond-track"><i style="width:${bond}%"></i></div><small>♥ 친밀도 ${bond}/100 · 생산 보너스 +${Math.round(Math.min(.25,bond*.0025)*100)}%</small></div></div><div class="cow-rename-row"><input id="cowRenameInput" maxlength="12" value="${escHtml109(name)}" aria-label="젖소 이름"><button type="button" class="small-btn" data-rename-cow="${c.id}">이름 저장</button></div><div class="trait-card"><b>${t.traitIcon} ${escHtml109(t.traitName||'고유 특성')}</b>${escHtml109(cowTraits[c.type]?.desc||'')}</div><div class="trait-card"><b>${farmEffects[state.selectedFarm].icon} ${escHtml109(farm().name)} 효과</b>${escHtml109(farmEffects[state.selectedFarm].desc)}</div><div class="rare-guide"><b>🥛 이번 젖소의 희귀 우유 확률</b><div class="rare-row"><span>✨ 고품질 우유</span><span>${(rc.quality*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌟 별빛 우유</span><span>${(rc.star*100).toFixed(1)}%</span></div><div class="rare-row"><span>🌈 오로라 밀크</span><span>${rc.aurora?(rc.aurora*100).toFixed(1)+'%':'획득 불가'}</span></div></div><small style="display:block;margin-top:12px;color:#69827d;font-weight:750">젖소를 길게 꾹 누르면 정보가 열립니다.</small>`;
   $('#cowProfileDialog').showModal();
  };
 
@@ -877,27 +877,25 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   $('#cowProfileDialog').close();openCowProfile(c.id);
  });
 
- // 기존 pointerdown 즉시 착유를 가로채서: 짧게 누름=착유, 길게 누름=정보로 분리합니다.
- let cowPress109=null,cowSingleTimer109=0,lastCowTap109={id:null,time:0};
+ // 짧게 누르면 즉시 착유, 길게 꾹 누르면 젖소 정보를 엽니다.
+ let cowPress109=null;
  const worldWrap109=$('#worldWrap');
  worldWrap109.addEventListener('pointerdown',e=>{
   const cow=e.target.closest('.cow');if(!cow)return;
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
   clearTimeout(cowPress109?.timer);
   const id=cow.dataset.id,startX=e.clientX,startY=e.clientY;
-  cowPress109={id,startX,startY,long:false,pointerId:e.pointerId,timer:setTimeout(()=>{if(!cowPress109||cowPress109.id!==id)return;cowPress109.long=true;clearTimeout(cowSingleTimer109);openCowProfile(id)},520)};
+  cowPress109={id,startX,startY,long:false,pointerId:e.pointerId,timer:setTimeout(()=>{if(!cowPress109||cowPress109.id!==id)return;cowPress109.long=true;openCowProfile(id)},520)};
  },true);
  worldWrap109.addEventListener('pointermove',e=>{if(!cowPress109||e.pointerId!==cowPress109.pointerId)return;if(Math.hypot(e.clientX-cowPress109.startX,e.clientY-cowPress109.startY)>12){clearTimeout(cowPress109.timer);cowPress109=null}},true);
  worldWrap109.addEventListener('pointerup',e=>{
   if(!cowPress109||e.pointerId!==cowPress109.pointerId)return;
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
   const press=cowPress109;cowPress109=null;clearTimeout(press.timer);if(press.long)return;
-  const now=Date.now();
-  if(lastCowTap109.id===press.id&&now-lastCowTap109.time<300){clearTimeout(cowSingleTimer109);lastCowTap109={id:null,time:0};openCowProfile(press.id);return}
-  lastCowTap109={id:press.id,time:now};clearTimeout(cowSingleTimer109);cowSingleTimer109=setTimeout(()=>{if(lastCowTap109.id===press.id){milkCow(press.id);lastCowTap109={id:null,time:0}}},300);
+  milkCow(press.id);
  },true);
  worldWrap109.addEventListener('pointercancel',()=>{if(cowPress109){clearTimeout(cowPress109.timer);cowPress109=null}},true);
- worldWrap109.addEventListener('dblclick',e=>{const cow=e.target.closest('.cow');if(!cow)return;e.preventDefault();e.stopPropagation();clearTimeout(cowSingleTimer109);lastCowTap109={id:null,time:0};openCowProfile(cow.dataset.id)},true);
+ // 젖소 정보는 더블클릭 없이 길게 누르기로만 엽니다.
 
  /* 1.0.8 persistent active-time clock + pause + negative balance settlement */
  /* 1.0.7 onboarding missions + distinct farm bonuses */
