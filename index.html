@@ -304,6 +304,33 @@
 
 /* dandelion seeds stay tiny and crisp rather than large translucent blobs */
 .farm-particle.seed{opacity:.72;color:rgba(255,255,242,.82);text-shadow:none;filter:none}
+
+
+/* === Wildlife refinement v3: tiny animated farm-style birds & butterflies === */
+.farm-wildlife{filter:none!important;font-size:0!important;width:18px;height:14px;opacity:0;transform-origin:center;pointer-events:none}
+.farm-wildlife.butterfly{width:13px;height:11px}
+.wildlife-sprite{position:absolute;inset:0;display:block;transform-origin:center}
+/* bird: simple muted silhouette that matches the farm palette */
+.bird .wildlife-sprite::before{content:"";position:absolute;left:7px;top:6px;width:6px;height:4px;border-radius:60% 70% 65% 55%;background:#355f51;box-shadow:4px -1px 0 -2px #355f51}
+.bird .wildlife-sprite::after{content:"";position:absolute;left:12px;top:6px;width:4px;height:2px;background:#e8b85d;clip-path:polygon(0 0,100% 50%,0 100%)}
+.bird .wing{position:absolute;top:3px;width:8px;height:6px;background:#4f7a69;border-radius:90% 15% 80% 20%;transform-origin:100% 100%;animation:birdWing .34s ease-in-out infinite alternate}
+.bird .wing.left{left:2px;transform-origin:100% 100%}
+.bird .wing.right{left:8px;transform:scaleX(-1);transform-origin:0 100%;animation-name:birdWingR}
+@keyframes birdWing{from{transform:rotate(18deg) scaleY(.72)}to{transform:rotate(-28deg) scaleY(1.05)}}
+@keyframes birdWingR{from{transform:scaleX(-1) rotate(18deg) scaleY(.72)}to{transform:scaleX(-1) rotate(-28deg) scaleY(1.05)}}
+/* butterfly: tiny cream/pink wings, no emoji sticker look */
+.butterfly .wildlife-sprite::before{content:"";position:absolute;left:6px;top:3px;width:2px;height:7px;border-radius:999px;background:#6e6b59}
+.butterfly .wing{position:absolute;top:2px;width:6px;height:8px;background:#f3c8b6;border:1px solid rgba(116,94,76,.24);border-radius:85% 25% 75% 30%;transform-origin:100% 55%;animation:butterflyWing .24s ease-in-out infinite alternate}
+.butterfly .wing.left{left:0}
+.butterfly .wing.right{right:0;transform-origin:0 55%;animation-name:butterflyWingR;background:#f6d8a9}
+@keyframes butterflyWing{from{transform:scaleX(.28) rotate(-8deg)}to{transform:scaleX(1) rotate(8deg)}}
+@keyframes butterflyWingR{from{transform:scaleX(.28) rotate(8deg)}to{transform:scaleX(1) rotate(-8deg)}}
+/* make their travel smaller/subtler than the previous emoji sprites */
+.farm-wildlife.dir-lr,.farm-wildlife.dir-rl,.farm-wildlife.dir-bltr,.farm-wildlife.dir-trbl{filter:drop-shadow(0 1px 1px rgba(23,61,55,.10))!important}
+
+/* milking progress: transparent-center yellow donut */
+.action-progress{width:58px!important;height:58px!important;background:conic-gradient(var(--gold) var(--p),rgba(23,61,55,.18) 0)!important;box-shadow:0 3px 12px rgba(23,61,55,.14)!important;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 0)}
+.action-progress::after{content:none!important;display:none!important}
 </style>
 </head>
 <body>
@@ -566,20 +593,20 @@ function syncFarmLifeV2(){
 function spawnBirdV2(now=Date.now()){
   if(!state.started||state.paused||runtimeSuspended||weather().name==='봄비')return;
   const host=document.getElementById('wildlifeLife');if(!host)return;
-  const groupCount=Math.random()<.22?2:1;
+  const groupCount=Math.random()<.18?2:1;
   const dirs=['dir-lr','dir-rl','dir-bltr','dir-trbl'];
   for(let i=0;i<groupCount;i++){
-    const e=document.createElement('span'),isButterfly=Math.random()<.48;
+    const e=document.createElement('span'),isButterfly=Math.random()<.44;
     const dir=dirs[Math.floor(Math.random()*dirs.length)];
     e.className='farm-wildlife '+(isButterfly?'butterfly':'bird')+' '+dir;
-    e.textContent=isButterfly?'🦋':'🐦';
-    e.style.setProperty('--wild-y',(10+Math.random()*48).toFixed(1)+'%');
-    e.style.setProperty('--wild-dur',(isButterfly?8+Math.random()*5:9+Math.random()*5).toFixed(1)+'s');
-    e.style.setProperty('--wild-scale',(isButterfly?.78+Math.random()*.42:.75+Math.random()*.40).toFixed(2));
-    e.style.animationDelay=(i*.45).toFixed(2)+'s';
-    host.appendChild(e);setTimeout(()=>e.remove(),16000);
+    e.innerHTML='<span class="wildlife-sprite"><i class="wing left"></i><i class="wing right"></i></span>';
+    e.style.setProperty('--wild-y',(12+Math.random()*44).toFixed(1)+'%');
+    e.style.setProperty('--wild-dur',(isButterfly?9+Math.random()*5:8+Math.random()*4).toFixed(1)+'s');
+    e.style.setProperty('--wild-scale',(isButterfly?.58+Math.random()*.18:.62+Math.random()*.20).toFixed(2));
+    e.style.animationDelay=(i*.55).toFixed(2)+'s';
+    host.appendChild(e);setTimeout(()=>e.remove(),15500);
   }
-  lifeLastBirdAt=now;lifeNextBirdDelay=9000+Math.random()*12000;
+  lifeLastBirdAt=now;lifeNextBirdDelay=10000+Math.random()*14000;
 }
 function spawnParticleV2(now=Date.now()){
   if(!state.started||state.paused||runtimeSuspended)return;
