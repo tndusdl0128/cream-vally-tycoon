@@ -941,6 +941,24 @@ function bind(){document.addEventListener('keydown',e=>{const map={ArrowUp:'up',
   milkCow(press.id);
  },true);
  worldWrap109.addEventListener('pointercancel',()=>{if(cowPress109){clearTimeout(cowPress109.timer);cowPress109=null}},true);
+
+ // iPhone/Safari에서 목장 바닥 터치가 pointerdown으로 누락되는 경우를 위한 전용 터치 이동 처리
+ let lastGroundTouch109=0;
+ worldWrap109.addEventListener('touchstart',e=>{
+  const target=e.target;
+  if(target.closest('.cow,button,input,select,dialog'))return;
+  const t=e.touches&&e.touches[0];if(!t)return;
+  e.preventDefault();
+  lastGroundTouch109=Date.now();
+  if(state.paused){toast('⏸️ 게임이 정지 중이에요. 재개 후 이동할 수 있어요.','warn');return}
+  setMoveTarget({target,clientX:t.clientX,clientY:t.clientY});
+ },{passive:false,capture:true});
+
+ // 일부 iOS 버전에서 touchstart 뒤 synthetic pointerdown/click이 겹치는 것을 방지
+ worldWrap109.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch'&&Date.now()-lastGroundTouch109<450&&!e.target.closest('.cow')){e.preventDefault();e.stopImmediatePropagation()}
+ },true);
+
  // 젖소 정보는 더블클릭 없이 길게 누르기로만 엽니다.
 
 
