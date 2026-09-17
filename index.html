@@ -242,9 +242,19 @@
 .world-wrap.time-sunset .time-life::after{opacity:.42}.world-wrap.time-night .time-life::after{opacity:.82}
 
 /* occasional birds */
-.farm-bird{position:absolute;left:-12%;top:18%;font-size:clamp(12px,1.35vw,22px);opacity:0;filter:drop-shadow(0 3px 2px rgba(20,50,40,.18));animation:birdCross var(--bird-dur,12s) linear forwards;transform-origin:center;will-change:transform,left,top}
-.farm-bird::after{content:"⌁";display:block;transform:scaleX(1.55);font-weight:900;color:rgba(38,61,59,.78)}
-@keyframes birdCross{0%{left:-10%;top:var(--bird-y,20%);opacity:0;transform:translateY(0) scale(var(--bird-scale,.8)) rotate(-4deg)}7%{opacity:.75}25%{transform:translateY(-7px) scale(var(--bird-scale,.8)) rotate(3deg)}50%{transform:translateY(5px) scale(var(--bird-scale,.8)) rotate(-2deg)}75%{transform:translateY(-5px) scale(var(--bird-scale,.8)) rotate(3deg)}92%{opacity:.72}100%{left:110%;top:calc(var(--bird-y,20%) + 7%);opacity:0;transform:translateY(2px) scale(var(--bird-scale,.8)) rotate(1deg)}}
+/* visible wildlife: real bird/butterfly sprites using emoji, multiple directions */
+.farm-wildlife{position:absolute;opacity:0;line-height:1;filter:drop-shadow(0 3px 2px rgba(20,50,40,.16));transform-origin:center;will-change:transform,left,right,top,bottom;user-select:none}
+.farm-wildlife.bird{font-size:clamp(18px,2.0vw,32px)}
+.farm-wildlife.butterfly{font-size:clamp(16px,1.75vw,27px);filter:drop-shadow(0 2px 1px rgba(20,50,40,.12))}
+.farm-wildlife.dir-lr{left:-10%;top:var(--wild-y,25%);animation:wildLR var(--wild-dur,10s) linear forwards}
+.farm-wildlife.dir-rl{right:-10%;top:var(--wild-y,25%);animation:wildRL var(--wild-dur,10s) linear forwards}
+.farm-wildlife.dir-bltr{left:-8%;bottom:-8%;animation:wildBLTR var(--wild-dur,11s) linear forwards}
+.farm-wildlife.dir-trbl{right:-8%;top:-8%;animation:wildTRBL var(--wild-dur,11s) linear forwards}
+.farm-wildlife.butterfly{animation-timing-function:ease-in-out!important}
+@keyframes wildLR{0%{left:-10%;opacity:0;transform:translateY(0) scale(var(--wild-scale,.9)) rotate(-5deg)}8%{opacity:.95}25%{transform:translateY(-10px) scale(var(--wild-scale,.9)) rotate(3deg)}50%{transform:translateY(7px) scale(var(--wild-scale,.9)) rotate(-2deg)}75%{transform:translateY(-6px) scale(var(--wild-scale,.9)) rotate(3deg)}92%{opacity:.92}100%{left:108%;opacity:0;transform:translateY(3px) scale(var(--wild-scale,.9)) rotate(1deg)}}
+@keyframes wildRL{0%{right:-10%;opacity:0;transform:translateY(0) scaleX(-1) scale(var(--wild-scale,.9)) rotate(-4deg)}8%{opacity:.95}25%{transform:translateY(8px) scaleX(-1) scale(var(--wild-scale,.9)) rotate(2deg)}50%{transform:translateY(-8px) scaleX(-1) scale(var(--wild-scale,.9)) rotate(-2deg)}75%{transform:translateY(5px) scaleX(-1) scale(var(--wild-scale,.9)) rotate(2deg)}92%{opacity:.92}100%{right:108%;opacity:0;transform:translateY(-2px) scaleX(-1) scale(var(--wild-scale,.9))}}
+@keyframes wildBLTR{0%{left:-8%;bottom:-8%;opacity:0;transform:scale(var(--wild-scale,.9)) rotate(-18deg)}10%{opacity:.95}40%{transform:translate(12vw,-18vh) scale(var(--wild-scale,.9)) rotate(4deg)}70%{transform:translate(27vw,-38vh) scale(var(--wild-scale,.9)) rotate(-4deg)}100%{left:102%;bottom:92%;opacity:0;transform:scale(var(--wild-scale,.9)) rotate(8deg)}}
+@keyframes wildTRBL{0%{right:-8%;top:-8%;opacity:0;transform:scaleX(-1) scale(var(--wild-scale,.9)) rotate(15deg)}10%{opacity:.95}40%{transform:translate(-14vw,16vh) scaleX(-1) scale(var(--wild-scale,.9)) rotate(-4deg)}70%{transform:translate(-29vw,38vh) scaleX(-1) scale(var(--wild-scale,.9)) rotate(4deg)}100%{right:102%;top:90%;opacity:0;transform:scaleX(-1) scale(var(--wild-scale,.9)) rotate(-8deg)}}
 
 /* petals / dandelion seeds are sparse, not constant */
 .farm-particle{position:absolute;left:var(--px,50%);top:-6%;font-size:var(--ps,12px);opacity:0;animation:particleFall var(--pd,9s) ease-in forwards;will-change:transform,top;filter:drop-shadow(0 1px 1px rgba(50,70,50,.12))}
@@ -254,10 +264,46 @@
 .world-wrap.weather-breeze .farm-particle{animation-duration:calc(var(--pd,9s) * .72)}
 .world-wrap.weather-rainy .particle-life{opacity:.18}
 
-.world-wrap.life-paused .farm-bird,.world-wrap.life-paused .farm-particle,.world-wrap.life-paused .water-life::before,.world-wrap.life-paused .water-life::after,.world-wrap.life-paused .water-sparkle,.world-wrap.life-paused .breeze-life::before,.world-wrap.life-paused .breeze-life::after,.world-wrap.life-paused .ambience-layer::after,.world-wrap.life-paused .factory-lamp,.world-wrap.life-paused .factory-pulse,.world-wrap.life-paused .factory-steam::before,.world-wrap.life-paused .factory-steam::after,.world-wrap.life-paused .weather-rain,.world-wrap.life-paused .weather-rain::before,.world-wrap.life-paused .weather-rainbow-arc{animation-play-state:paused!important}
+.world-wrap.life-paused .farm-wildlife,.world-wrap.life-paused .farm-particle,.world-wrap.life-paused .water-life::before,.world-wrap.life-paused .water-life::after,.world-wrap.life-paused .water-sparkle,.world-wrap.life-paused .breeze-life::before,.world-wrap.life-paused .breeze-life::after,.world-wrap.life-paused .ambience-layer::after,.world-wrap.life-paused .factory-lamp,.world-wrap.life-paused .factory-pulse,.world-wrap.life-paused .factory-steam::before,.world-wrap.life-paused .factory-steam::after,.world-wrap.life-paused .weather-rain,.world-wrap.life-paused .weather-rain::before,.world-wrap.life-paused .weather-rainbow-arc{animation-play-state:paused!important}
 
-@media (prefers-reduced-motion:reduce){.farm-bird,.farm-particle{display:none!important}.time-life{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.farm-wildlife,.farm-particle{display:none!important}.time-life{transition:none!important}}
 
+
+
+/* === Ambience refinement: lighter rain, no white drift, calmer pond === */
+/* remove the pale drifting flecks that read as translucent afterimages */
+.breeze-life{display:none!important}
+
+/* keep the pond alive without the large moving ripple rings */
+.water-life::before,.water-life::after{display:none!important}
+.water-life{opacity:.42}
+.water-sparkle{
+  left:4%;bottom:8%;width:13%;height:15%;
+  background:linear-gradient(112deg,transparent 28%,rgba(255,255,255,.18) 47%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.12) 54%,transparent 70%);
+  filter:blur(.4px);
+  animation:waterShineCalm 10s ease-in-out infinite;
+}
+@keyframes waterShineCalm{
+  0%,100%{transform:translateX(-12%) skewX(-8deg);opacity:.08}
+  50%{transform:translateX(34%) skewX(-8deg);opacity:.28}
+}
+
+/* shorter, sparser rain: one light layer instead of dense long streaks */
+.weather-rain{
+  inset:-6%;
+  background-image:linear-gradient(106deg,transparent 45%,rgba(218,238,252,.36) 48%,rgba(218,238,252,.36) 52%,transparent 55%);
+  background-size:58px 34px;
+  opacity:0;
+  transform:translateY(-4%);
+  transition:opacity .65s ease;
+}
+.weather-rain::before{display:none!important}
+.world-wrap.weather-rainy .weather-rain{opacity:.30;animation:rainFallSoft .95s linear infinite}
+@keyframes rainFallSoft{to{transform:translate(-10px,42px)}}
+.world-wrap.weather-rainy .weather-tint{background:rgba(74,100,120,.07);backdrop-filter:saturate(.90) brightness(.97)}
+
+/* dandelion seeds stay tiny and crisp rather than large translucent blobs */
+.farm-particle.seed{opacity:.72;color:rgba(255,255,242,.82);text-shadow:none;filter:none}
 </style>
 </head>
 <body>
@@ -501,7 +547,7 @@ function updateFarmAmbience(){
 
 
 /* Living farm ambience v2 runtime */
-let lifeLastBirdAt=0,lifeNextBirdDelay=18000+Math.random()*12000,lifeLastParticleAt=0,lifeNextParticleDelay=4500+Math.random()*4500;
+let lifeLastBirdAt=0,lifeNextBirdDelay=9000+Math.random()*9000,lifeLastParticleAt=0,lifeNextParticleDelay=4500+Math.random()*4500;
 function activeDayProgressV2(){
   const now=state.paused&&state.pauseStartedAt?state.pauseStartedAt:Date.now();
   return Math.max(0,Math.min(.9999,((now-startEpoch())%DAY_DURATION_MS)/DAY_DURATION_MS));
@@ -520,12 +566,20 @@ function syncFarmLifeV2(){
 function spawnBirdV2(now=Date.now()){
   if(!state.started||state.paused||runtimeSuspended||weather().name==='봄비')return;
   const host=document.getElementById('wildlifeLife');if(!host)return;
-  const b=document.createElement('span');b.className='farm-bird';
-  b.style.setProperty('--bird-y',(12+Math.random()*24).toFixed(1)+'%');
-  b.style.setProperty('--bird-dur',(10+Math.random()*5).toFixed(1)+'s');
-  b.style.setProperty('--bird-scale',(.62+Math.random()*.45).toFixed(2));
-  host.appendChild(b);setTimeout(()=>b.remove(),16000);
-  lifeLastBirdAt=now;lifeNextBirdDelay=18000+Math.random()*17000;
+  const groupCount=Math.random()<.22?2:1;
+  const dirs=['dir-lr','dir-rl','dir-bltr','dir-trbl'];
+  for(let i=0;i<groupCount;i++){
+    const e=document.createElement('span'),isButterfly=Math.random()<.48;
+    const dir=dirs[Math.floor(Math.random()*dirs.length)];
+    e.className='farm-wildlife '+(isButterfly?'butterfly':'bird')+' '+dir;
+    e.textContent=isButterfly?'🦋':'🐦';
+    e.style.setProperty('--wild-y',(10+Math.random()*48).toFixed(1)+'%');
+    e.style.setProperty('--wild-dur',(isButterfly?8+Math.random()*5:9+Math.random()*5).toFixed(1)+'s');
+    e.style.setProperty('--wild-scale',(isButterfly?.78+Math.random()*.42:.75+Math.random()*.40).toFixed(2));
+    e.style.animationDelay=(i*.45).toFixed(2)+'s';
+    host.appendChild(e);setTimeout(()=>e.remove(),16000);
+  }
+  lifeLastBirdAt=now;lifeNextBirdDelay=9000+Math.random()*12000;
 }
 function spawnParticleV2(now=Date.now()){
   if(!state.started||state.paused||runtimeSuspended)return;
